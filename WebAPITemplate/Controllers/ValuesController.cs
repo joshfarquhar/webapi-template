@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace WebAPITemplate.Controllers
 {
@@ -10,36 +11,45 @@ namespace WebAPITemplate.Controllers
     [ApiController]
     public class ValuesController : ControllerBase
     {
-        // GET api/values
-        [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        private readonly IOptionsSnapshot<A01TemplateApiOptions> a01TemplateApiOptions;
+
+        public ValuesController(IOptionsSnapshot<A01TemplateApiOptions> a01TemplateApiOptions)
         {
-            return new string[] { "value1", "value2" };
+            this.a01TemplateApiOptions = a01TemplateApiOptions;
         }
 
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public ActionResult<string> Get(int id)
+        // GET api/values/{key}
+        /// <summary>
+        /// Retrieve the value of a key.
+        /// </summary>
+        /// <param name="key">The key to look up the value of.</param>
+        /// <returns>The value of the specified key.</returns>
+        /// <response code="200">The value was successfully retrieved.</response>
+        /// <response code="400">The request parameters were invalid, the key doesn't exist, or a timeout occurred.</response>
+        [HttpGet("{key}")]
+        [ProducesResponseType(typeof(string), 200)]
+        [ProducesResponseType(400)]
+        public async Task<ActionResult<string>> Get(string key)
         {
-            return "value";
-        }
+            string result = null;
 
-        // POST api/values
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
+            Dictionary<string, string> dictionary = new Dictionary<string, string>
+            {
+                { "firstname", "Josh" },
+                { "lastname", "Farquhar" },
+                { "email", "josh@farquhar.me" },
+            };
 
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
+            try
+            {
+                result = dictionary[key];
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+            return Ok(result);
         }
     }
 }
